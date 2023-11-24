@@ -5,7 +5,7 @@
 			<thead>
 				<tr>
 					<th style="text-align: left" class="col col-sm-2" id="check-run-party-filter">
-						<span class="party-onclick party-display">Party</span>
+						<span class="party-onclick party-display">Supplier</span>
 						<span class="filter-icon">
 							<svg class="icon icon-sm" style="" @click="toggleShowPartyFilter()">
 								<use class="" href="#icon-filter"></use>
@@ -15,19 +15,13 @@
 							<input type="text" class="form-control" v-model="state.party_filter" />
 						</div>
 					</th>
-					<th class="col col-sm-2">Document</th>
+					<th class="col col-sm-2 sup">Sup. Invoice NO</th>
 					<th class="col col-sm-2" style="white-space: nowrap; width: 12.49%">
-						Document Date
+						Invoice Date
 						<span
 							@click="sortTransactions('posting_date')"
 							class="check-run-sort-indicator"
 							id="check-run-doc-date-sort"
-							>&#11021;</span
-						>
-					</th>
-					<th class="col col-sm-2" tyle="white-space: nowrap; width: 12.49%">
-						Mode of Payment
-						<span @click="sortTransactions('mode_of_payment')" class="check-run-sort-indicator" id="check-run-mop-sort"
 							>&#11021;</span
 						>
 					</th>
@@ -36,6 +30,9 @@
 						<span @click="sortTransactions('amount')" class="check-run-sort-indicator" id="check-run-outstanding-sort"
 							>&#11021;</span
 						>
+					</th>
+					<th class="col col-sm-2">
+						Amount Paid
 					</th>
 					<th class="col col-sm-1">
 						Due Date
@@ -83,19 +80,17 @@
 							</button>
 						</td>
 						<td>{{ item.posting_date }}</td>
-						<td class="mop-onclick" :data-mop-index="i">
-							<ADropdown
-								ref="dropdowns"
-								v-model="state.transactions[i].mode_of_payment"
-								:items="modeOfPaymentNames"
-								v-if="state.status == 'Draft'"
-								:transactionIndex="i"
-								:isOpen="state.transactions[i].mopIsOpen"
-								@isOpenChanged="val => (state.transactions[i].mopIsOpen = val)" />
-
-							<span v-else>{{ transactions[i].mode_of_payment }}</span>
-						</td>
 						<td>{{ format_currency(item.amount, pay_to_account_currency, 2) }}</td>
+						<td>
+							<input
+								type="text"
+								class="form-control"
+								v-model="item.amount"
+								:data-amount-paid-index="i"
+								@change="onAmountPaidChange(i)"
+								:disabled="state.docstatus > 0"
+							/>
+						</td>
 						<td>{{ moment(item.due_date).format('MM/DD/YY') }}</td>
 						<td v-if="state.status == 'Draft'" style="text-align: left">
 							<input
@@ -151,6 +146,16 @@ export default {
 		},
 	},
 	methods: {
+		onAmountPaidChange(index) {
+			//change to parseint
+			let amount = parseInt(this.transactions[index].amount)
+			if(isNaN(amount)) {
+				amount = 0
+			}
+			this.transactions[index].amount = amount
+			cur_frm.doc.amount_check_run = cur_frm.check_run_state.check_run_total()
+			cur_frm.dirty()
+		},
 		transactionUrl: transaction => {
 			if (transaction.doctype !== 'Journal Entry') {
 				return encodeURI(
@@ -247,5 +252,8 @@ export default {
 }
 .table tr {
 	height: 50px;
+}
+.sup {
+    text-align: left;
 }
 </style>

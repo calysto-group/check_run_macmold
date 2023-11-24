@@ -508,6 +508,7 @@ def get_entries(doc: CheckRun | str) -> dict:
 			(purchase_invoices.bill_no).as_("ref_number"),
 			(purchase_invoices.supplier).as_("party"),
 			(purchase_invoices.supplier_name).as_("party_name"),
+			(purchase_invoices.outstanding_amount).as_('original_amount'),
 			Coalesce(payment_schedule.outstanding, purchase_invoices.outstanding_amount).as_("amount"),
 			Coalesce(payment_schedule.due_date, purchase_invoices.due_date).as_("due_date"),
 			purchase_invoices.posting_date,
@@ -541,6 +542,7 @@ def get_entries(doc: CheckRun | str) -> dict:
 			(exp_claims.employee).as_("party"),
 			(employees.employee_name).as_("party_name"),
 			(exp_claims.grand_total).as_("amount"),
+			(exp_claims.grand_total).as_('original_amount'),
 			(exp_claims.posting_date).as_("due_date"),
 			exp_claims.posting_date,
 			Coalesce(exp_claims.mode_of_payment, employees.mode_of_payment, "\n").as_("mode_of_payment"),
@@ -581,6 +583,7 @@ def get_entries(doc: CheckRun | str) -> dict:
 			je_accounts.party,
 			(je_accounts.party).as_("party_name"),
 			(je_accounts.credit_in_account_currency).as_("amount"),
+			(je_accounts.credit_in_account_currency).as_('original_amount'),
 			journal_entries.due_date,
 			journal_entries.posting_date,
 			Coalesce(journal_entries.mode_of_payment, "\n").as_("mode_of_payment"),
@@ -610,7 +613,8 @@ def get_entries(doc: CheckRun | str) -> dict:
 			else:
 				query = query.union(qb)
 	if query:
-		query = query.orderby("due_date", "name").get_sql()
+		query = query.orderby('party', 'due_date', 'name').get_sql()
+		#query = query.orderby("due_date", "name").get_sql()
 
 	transactions = frappe.db.sql(
 		query, {"company": company, "pay_to_account": pay_to_account, "end_date": end_date}, as_dict=True

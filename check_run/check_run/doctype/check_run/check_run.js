@@ -153,6 +153,12 @@ function set_queries(frm) {
 
 function get_entries(frm) {
 	frappe.xcall('check_run.check_run.doctype.check_run.check_run.get_entries', { doc: frm.doc }).then(r => {
+		debugger
+		//for each transaction, set mode_of_payment to "Check" using forEach
+		r.transactions.forEach(function (transaction) {
+			transaction.mode_of_payment = "Check"
+			//transaction.original_amount = parseInt(transaction.amount)
+		})
 		frm.transactions = r.transactions
 		frm.modes_of_payment = r.modes_of_payment
 		check_run.mount_table(frm)

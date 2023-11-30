@@ -216,6 +216,7 @@ export default {
 			this.$refs.dropdowns[this.state.selectedRow].openWithSearch()
 		},
 		showPreview(attachment) {
+			debugger
 			var file_url = typeof attachment == 'string' ? attachment : attachment[0].file_url
 			frappe.ui.addFilePreviewWrapper()
 			frappe.ui.pdfPreview(cur_frm, file_url)
